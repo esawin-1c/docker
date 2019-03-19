@@ -36,7 +36,13 @@ apt-get install -y \
   unzip \
   lua5.2 \
   locales \
-  python-all-dev
+  python-all-dev \
+  cmake \
+  pkg-config \
+  nodejs \
+  npm \
+  curl 
+  
 
 if [[ $(grep -cF xenial /etc/lsb-release) > 0 ]]; then
   apt-get install -y libsqlite3-mod-spatialite
@@ -47,12 +53,14 @@ git clone \
   --depth=1 \
   --recurse-submodules \
   --single-branch \
-  --branch=master \
+  --branch=3.0.0 \
   https://github.com/valhalla/valhalla.git libvalhalla
 
 cd libvalhalla
-./autogen.sh
-./configure --enable-static
+git submodule update --init --recursive
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_NODE_BINDINGS=OFF
 make -j$(nproc)
 make install
 cd -
@@ -60,25 +68,3 @@ cd -
 # clean up
 ldconfig
 rm -rf libvalhalla
-
-#osmlr
-add-apt-repository ppa:valhalla-core/opentraffic
-apt-get update -y
-
-# get the software installed
-git clone \
-  --depth=1 \
-  --recurse-submodules \
-  --single-branch \
-  --branch=master \
-  https://github.com/opentraffic/osmlr.git osmlr
-
-cd osmlr
-./autogen.sh
-./configure --enable-static
-make -j$(nproc)
-make install
-cd -
-
-# clean up
-rm -rf osmlr
